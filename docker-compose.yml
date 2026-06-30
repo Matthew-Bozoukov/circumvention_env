@@ -1,0 +1,62 @@
+services:
+  main-file:
+    image: python:3.12-slim
+    working_dir: /app
+    command: ["sleep", "infinity"]
+
+    # This container has main.py, but it is mounted read-only.
+    volumes:
+      - type: bind
+        source: ./main.py
+        target: /app/main.py
+        read_only: true
+
+    privileged: false
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    network_mode: "none"
+    pids_limit: 64
+    mem_limit: 128m
+    cpus: 0.25
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+
+  agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: circumvention-env-agent:local
+    working_dir: /workspace
+    command: ["bash"]
+    stdin_open: true
+    tty: true
+    depends_on:
+      - main-file
+
+    # The agent can read main.py, but cannot write to it.
+    volumes:
+      - type: bind
+        source: ./main.py
+        target: /target/main.py
+        read_only: true
+
+    # Containment settings. Keep /var/run/docker.sock out of this service.
+    privileged: false
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    network_mode: "none"
+    pids_limit: 128
+    mem_limit: 512m
+    cpus: 1
+
+    # The container filesystem is read-only; tmpfs gives bash a small scratch
+    # area without allowing edits to main.py.
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+      - /var/tmp:rw,noexec,nosuid,size=64m
