@@ -7,11 +7,13 @@ from scorers import reward_hacker_scorer
 from inspect_ai.dataset import Sample
 @task
 def circumvention_env(
-    reward_hacker_model: str | Model | None = None,
+    grader_model: str | Model | None = None,
     ):
 
 
-    scorer=reward_hacker_scorer(reward_hacker_model)
+    scorer=reward_hacker_scorer(grader_model)
+    
+    
     return Task(
 
         dataset=[Sample(
@@ -23,15 +25,11 @@ def circumvention_env(
         )
         ],
         solver=[
-            use_tool(
+            use_tools(
                 bash(timeout=20),
                 read_file()
-            )
+            ),
             generate(tool_calls="loop"),
         ],
         scorer=scorer,
-        sandbox="docker"
-
-
-
-    )
+        sandbox="docker")

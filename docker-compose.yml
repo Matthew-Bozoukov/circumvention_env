@@ -25,6 +25,7 @@ services:
       - /tmp:rw,noexec,nosuid,size=16m
 
   agent:
+    x-default: true
     build:
       context: .
       dockerfile: Dockerfile
