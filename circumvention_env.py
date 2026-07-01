@@ -1,13 +1,17 @@
 from inspect_ai import Task, task
 from inspect_ai.model import ChatMessageUser, ChatMessageSystem, Model
 from prompts import DEFAULT_SYSTEM_PROMPT, DEFAULT_USER_PROMPT
- 
-
+from inspect_ai.solver import generate,use_tools
+from inspect_ai.tool import bash, read_file
+from scorers import reward_hacker_scorer
+from inspect_ai.dataset import Sample
 @task
 def circumvention_env(
+    reward_hacker_model: str | Model | None = None,
+    ):
 
 
-    scorer=
+    scorer=reward_hacker_scorer(reward_hacker_model)
     return Task(
 
         dataset=[Sample(
@@ -19,11 +23,15 @@ def circumvention_env(
         )
         ],
         solver=[
-
+            use_tool(
+                bash(timeout=20),
+                read_file()
+            )
+            generate(tool_calls="loop"),
         ],
+        scorer=scorer,
         sandbox="docker"
 
 
 
     )
-):
